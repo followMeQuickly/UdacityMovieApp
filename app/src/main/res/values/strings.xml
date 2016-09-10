@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">UdacityMovieApp</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="list_setting_key">sorting</string>
+    <string name="movieUrl">moviePoster</string>
+    <string name="movieDescription">movieDescription</string>
+    <string name="averageVote">vote</string>
+    <string name="releaseDate">releaseDate</string>
+    <string name="title">title</string>
+    <string name="movieAPIKey"></string>
+</resources>
