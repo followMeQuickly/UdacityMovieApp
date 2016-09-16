@@ -36,7 +36,7 @@ public class SelectedMovie extends AppCompatActivity implements View.OnClickList
 
         view.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        Picasso.with(this).load(imageUrl).fit().into(view);
+        Picasso.with(this).load(imageUrl).into(view);
 
 
     }
