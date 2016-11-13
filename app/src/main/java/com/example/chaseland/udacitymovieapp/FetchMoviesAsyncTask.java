@@ -1,8 +1,12 @@
 package com.example.chaseland.udacitymovieapp;
 
+import android.content.ContentValues;
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.example.chaseland.udacitymovieapp.data.MoviePosterContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,14 +21,21 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
+
 /**
  * Created by chaseland on 8/6/16.
  */
-public class MovieApiFactory extends AsyncTask<String, Void, List<MovieInfo>> {
+public class FetchMoviesAsyncTask extends AsyncTask<String, Void, Void> {
+
+    private Context mContext;
+    public FetchMoviesAsyncTask(Context context) {
+        mContext = context;
+    }
 
 
     @Override
-    protected List<MovieInfo> doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String movieJson = "";
@@ -64,6 +75,7 @@ public class MovieApiFactory extends AsyncTask<String, Void, List<MovieInfo>> {
             while ((line = reader.readLine()) != null) {
                 stringBuffer.append(line + "\n");
             }
+
             if (stringBuffer.length() == 0) {
                 return null;
             }
@@ -86,13 +98,14 @@ public class MovieApiFactory extends AsyncTask<String, Void, List<MovieInfo>> {
                 }
             }
         }
-        Log.e("LOOKATTHIS", movieJson);
-        return getMovies(movieJson);
+        Log.e("Loaded Jason \n", movieJson);
+        getMovies(movieJson);
+        return null ;
     }
 
-    private List<MovieInfo> getMovies(String jsonString) {
+    private void getMovies(String jsonString) {
 
-        List<MovieInfo> moviePaths = new ArrayList<MovieInfo>();
+
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
             JSONArray array = jsonObject.getJSONArray("results");
@@ -106,18 +119,21 @@ public class MovieApiFactory extends AsyncTask<String, Void, List<MovieInfo>> {
                 String vote = currentObject.getString("vote_average");
                 String releaseDate = currentObject.getString("release_date");
                 String title = currentObject.getString("title");
-                MovieInfo movieInfo = new MovieInfo(posterPath, posterDescription, title, vote, releaseDate);
 
+                ContentValues movieValues = new ContentValues();
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_POSTER_PATH, posterPath);
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_MOVIE_TITLE, title);
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_MOVIE_DESCRIPTION, posterDescription);
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_RELEASE_DATE, releaseDate);
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_VOTE, vote);
 
-                moviePaths.add(i, movieInfo);
+                mContext.getContentResolver().insert(MoviePosterContract.PosterEntry.CONTENT_URI, movieValues);
 
             }
 
         } catch (JSONException exception) {
 
         }
-
-        return moviePaths;
 
 
     }
