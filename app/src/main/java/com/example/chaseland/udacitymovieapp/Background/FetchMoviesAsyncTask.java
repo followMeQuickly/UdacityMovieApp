@@ -1,7 +1,8 @@
-package com.example.chaseland.udacitymovieapp;
+package com.example.chaseland.udacitymovieapp.Background;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.SQLException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +63,8 @@ public class FetchMoviesAsyncTask extends AsyncTask<String, Void, Void> {
                     appendPath(parameter).
 
                     appendQueryParameter("api_key", movieApiKey);
-            URL url = new URL(builder.toString());
+            String urlString = builder.toString();
+            URL url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
@@ -98,7 +101,7 @@ public class FetchMoviesAsyncTask extends AsyncTask<String, Void, Void> {
                 }
             }
         }
-        Log.e("Loaded Jason \n", movieJson);
+        Log.e("Loaded Json \n", movieJson);
         getMovies(movieJson);
         return null ;
     }
@@ -114,6 +117,7 @@ public class FetchMoviesAsyncTask extends AsyncTask<String, Void, Void> {
             String baseImagePath = "http://image.tmdb.org/t/p/w154//";
             for (int i = 0; i < array.length(); i++) {
                 JSONObject currentObject = (JSONObject) array.get(i);
+                int id = currentObject.getInt("id");
                 String posterPath = baseImagePath + currentObject.getString("poster_path");
                 String posterDescription = currentObject.getString("overview");
                 String vote = currentObject.getString("vote_average");
@@ -121,13 +125,25 @@ public class FetchMoviesAsyncTask extends AsyncTask<String, Void, Void> {
                 String title = currentObject.getString("title");
 
                 ContentValues movieValues = new ContentValues();
+                movieValues.put(MoviePosterContract.PosterEntry.COLUMN_MOVIE_ID, id);
                 movieValues.put(MoviePosterContract.PosterEntry.COLUMN_POSTER_PATH, posterPath);
                 movieValues.put(MoviePosterContract.PosterEntry.COLUMN_MOVIE_TITLE, title);
                 movieValues.put(MoviePosterContract.PosterEntry.COLUMN_MOVIE_DESCRIPTION, posterDescription);
                 movieValues.put(MoviePosterContract.PosterEntry.COLUMN_RELEASE_DATE, releaseDate);
                 movieValues.put(MoviePosterContract.PosterEntry.COLUMN_VOTE, vote);
 
-                mContext.getContentResolver().insert(MoviePosterContract.PosterEntry.CONTENT_URI, movieValues);
+
+                // this is some janky shit I had to do because it kept throwing exceptions for repeat insertions
+                try{
+                    mContext.getContentResolver().insert(MoviePosterContract.PosterEntry.CONTENT_URI, movieValues);
+
+                }
+                catch(SQLException exception)
+                {
+
+
+
+                }
 
             }
 
